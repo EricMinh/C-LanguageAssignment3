@@ -100,7 +100,7 @@ void clear(void) {
 
 void mathfnc(char s[]) {
 
-	double op2;
+	double op1, op2;
 
 	if (strcmp(s, "sin") == 0)
 		push(sin(pop()));
@@ -112,15 +112,32 @@ void mathfnc(char s[]) {
 		op2 = pop();
 		push(pow(pop(), op2));
 	}
+	else if (strcmp(s, "clear") == 0)
+		clear();
+	else if (strcmp(s, "dupe") == 0) {
+		op2 = pop();
+		push(op2);
+		push(op2);
+	}
+	else if (strcmp(s, "swap") == 0) {
+		op1 = pop();
+		op2 = pop();
+		push(op1);
+		push(op2);
+	}
 	else { printf("error: %s is not supported\n", s); }
 }
 
 /* reverse Polish calculator */
 int main(int argc, const char * argv[])
 {
-	int type;
-	double op1, op2;
+	int type, i, var = 0;
+	double op1, op2, v = 10;
 	char s[MAXOP];
+	double variable[26];
+
+	for (i = 0; i < 26; i++) { variable[i] = 0.0; }
+
 	while ((type = getop(s)) != EOF) {
 		switch (type) {
 		case NUMBER:
@@ -158,27 +175,27 @@ int main(int argc, const char * argv[])
 			printf("\t%.8g\n", op2);
 			push(op2);
 			break;
-		case 'C':
-			clear();
-			break;
-		case 'D':
-			op2 = pop();
-			push(op2);
-			push(op2);
-			break;
-		case 'S':
-			op1 = pop();
-			op2 = pop();
-			push(op1);
-			push(op2);
+		case '=':
+			pop();
+			if (var >= 'A' && var <= 'Z')
+				variable[var - 'A'] = pop();
+			else
+				printf("error: no variable name\n");
 			break;
 		case '\n':
-			printf("\t%.8g\n", pop());
+			v = pop();
+			printf("\t%.8g\n", v);
 			break;
 		default:
-			printf("error: unknown command %s\n", s);
+			if (type >= 'A' && type <= 'Z')
+				push(variable[type - 'A']);
+			else if (type == '!')
+				push(v);
+			else
+				printf("error: unknown command %s\n", s);
 			break;
 		}
+		var = type;
 	}
 	return 0;
 }
